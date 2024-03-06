@@ -7,4 +7,4 @@ license       = "MIT"
 
 # Dependencies
 
-requires      "nim >= 0.17.1", "pcap >= 0.17.1"
+requires      "nim >= 0.17.1", "pcap >= 0.1.0"
