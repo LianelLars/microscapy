@@ -1,0 +1,13 @@
+# Additional files
+*.txt
+
+# Pcap files
+pcap_files
+
+# Docfiles
+htmldocs
+
+# Project files
+nim.cfg
+utils*
+main*
