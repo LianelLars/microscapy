@@ -15,7 +15,7 @@ const Flags = {
 
 type
   Protocol* = object
-    ## Тип, описывающий содержимое протоколов.
+    ## A type describing the protocol content.
     protocolNumber*: int
     protocolType*: string
     flags*: seq[string]
@@ -24,18 +24,18 @@ type
     checksum*: string
 
   IPv4* = object
-    ## Тип, описывающий IPv4 информацию.
+    ## A type describing IPv4 information.
     totalSize*: int
     ttl*: int
     sourceIp*: string
     destinationIp*: string
     protocol*: Protocol
 
-  Packet* = object
-    ## Тип, описывающий содержимое пакетов.
+  Package* = object
+    ## A type describing the package content.
     time*: Time
     strTime*: string
-    packetSize*: int
+    packageSize*: int
     dataSize*: int
     inetVersion*: string
     sourceMac*: string
@@ -46,42 +46,42 @@ type
   TcpSession* = object
     ## TODO
     ##
-    ## Тип, описывающий содержимое для сессий.
+    ## A type describing the session content.
     participants*: seq[string]
-    packetCount*: int
-    packets*: seq[Packet]
+    packageCount*: int
+    packages*: seq[Package]
     averageTtl*: float
-    averagePacketSize*: float
+    averagePackageSize*: float
     averageDataSize*: float
     sessionDeviation*: float
 
 
 proc hexData*(data: seq[uint8]): seq[string] =
-  ## Возвращает HEX от входящих значений `data`. 
-  ## Необходимо для корректной обработки содержимого пакета.
+  ## Returns a HEX from the incoming `data`.
+  ## Required for correct processing of the data package.
   for item in data:
     result.add(toHex(item))
 
 
 proc parseIp*(ipData: seq[string]): string =
-  ## Возвращает строковое представление IP адреса из входящей `ipData`.
+  ## Returns a string representation of the IP address from the incoming `ipData`.
   result = fmt"{parseHexInt(ipData[0])}.{parseHexInt(ipData[1])}.{parseHexInt(ipData[2])}.{parseHexInt(ipData[3])}"
 
 
 proc parseProtocolData*(data: seq[string]): Protocol =
-  ## Функция отвечает за поиск информации о протоколе в содержимом пакета (`data`).
+  ## The function is responsible for finding protocol information in the contents of the package (`data`).
   ## 
-  ## На вход подается содержимое, из него вычленяется `inetData` и информация о протоколе:
+  ## The content is supplied to the input, `inetData` and protocol information are extracted from it:
   ## 
-  ## `protocolNumber` - номер протокола (`6` | `17`);
+  ## `protocolNumber` - protocol number (`6` | `17`);
   ## 
-  ## `protocolType` - тип протокола (`TCP` | `UDP`);
+  ## `protocolType` - protocol type (`TCP` | `UDP`);
   ## 
-  ## `sourcePort` - порт источника пакета;
+  ## `sourcePort` - package source port;
   ## 
-  ## `destinationPort` - порт назначения пакета;
+  ## `destinationPort` - package destination port;
   ## 
-  ## `checksum` - хеш-сумма пакета.
+  ## `checksum` - package checksum.
   let inetData = data[14..33]
   result.protocolNumber = parseHexInt(inetData[9])
   case result.protocolNumber
@@ -101,17 +101,17 @@ proc parseProtocolData*(data: seq[string]): Protocol =
 
 
 proc parseIPv4Data*(data: seq[string]): IPv4 =
-  ## Собирает информацию об общем содержимом пакета.
+  ## Collects information about the general contents of a package.
   ## 
-  ## `totalSize` - общий размер пакета;
+  ## `totalSize` - total package size;
   ## 
-  ## `ttl` - время жизни пакета;
+  ## `ttl` - package Time to Live;
   ## 
-  ## `protocol` - информация о протоколе (берется из функции `parseProtocolData`);
+  ## `protocol` - protocol information (from `parseProtocolData`);
   ## 
-  ## `sourceIp` - IP-адрес источника;
+  ## `sourceIp` - Source IP address;
   ## 
-  ## `destinationIp` - IP-адрес назначения.
+  ## `destinationIp` - Destination IP address.
   let inetData = data[14..33]
   result.totalSize = parseHexInt(inetData[2..3].join("").toLower)
   result.ttl = parseHexInt(inetData[8])
@@ -121,28 +121,28 @@ proc parseIPv4Data*(data: seq[string]): IPv4 =
     result.destinationIp = parseIp(inetData[16..19])
 
 
-proc getPacketData*(header: PcapRecordHeader, data: seq[string]): Packet =
-  ## Сбор информации о пакете.
+proc getPackageData*(header: PcapRecordHeader, data: seq[string]): Package =
+  ## Collecting package information.
   ## 
-  ## `time` - время отправки пакета (Используется `Unix-time` + милисекунды);
+  ## `time` - time of sending the package (`Unix-time` + ms);
   ## 
-  ## `inetVersion` - версия Интернет протокола (`IPv4` | `Not IPv4`);
+  ## `inetVersion` - Internet protocol version (`IPv4` | `Not IPv4`);
   ## 
-  ## `packetSize` - размер пакета;
+  ## `packageSize` - package size;
   ## 
-  ## `destinationMac` - мак-адрес назначения;
+  ## `destinationMac` - destination mac address;
   ## 
-  ## `sourceMac` - мак-адрес источника;
+  ## `sourceMac` - source mac address;
   ## 
-  ## `inetInfo` - информация об Интернет протоколе (используется `parseIPv4Data`)
+  ## `inetInfo` - Internet protocol information (from `parseIPv4Data`)
   ## 
-  ## `dataSize` - размер полезной нагрузки;
+  ## `dataSize` - payload size;
   ## 
-  ## `payload` - HEX-строка полезной нагрузки внутри пакета.
+  ## `payload` - HEX string of the payload inside the package.
   result.time = fromUnixFloat(parseFloat(fmt"{header.tsSec}.{header.tsUsec}"))
   result.strTime = result.time.format("yyyy-MM-dd, HH:mm:ss (ffffff)")
   result.inetVersion = "IPv4"
-  result.packetSize = len(data)
+  result.packageSize = len(data)
   
   case data[12..13].join("").toLower
   of "0800":
