@@ -162,4 +162,5 @@ proc getPackageData*(header: PcapRecordHeader, data: seq[string]): Package =
       result.dataSize = len(data[52..^1])
       result.payload = data[52..^1].join("").toLower
     else:
-      result.dataSize = 0
+      result.dataSize = len(data[42..^1])
+      result.payload = data[42..^1].join("").toLower

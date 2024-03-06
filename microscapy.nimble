@@ -2,7 +2,7 @@
 
 version       = "1.0.0"
 author        = "LianelLars"
-description   = "Small library for parse PCAP-files."
+description   = "Small library for parsing PCAP-files."
 license       = "MIT"
 
 # Dependencies
