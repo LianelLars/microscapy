@@ -1,5 +1,7 @@
 # Additional files
 *.txt
+*.exe
+*.cfg
 
 # Pcap files
 pcap_files
@@ -8,6 +10,5 @@ pcap_files
 htmldocs
 
 # Project files
-nim.cfg
 utils*
 main*
